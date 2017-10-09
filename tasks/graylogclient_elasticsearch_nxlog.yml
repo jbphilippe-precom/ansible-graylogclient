@@ -1,0 +1,11 @@
+---
+# tasks file for ansible-graylogclient MongoDB nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Uploading Elasticsearch nxlog configuration template
+  template:
+    src="graylogclient_elasticsearch_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.d/elasticsearch.conf"
+    mode=0644
+  notify: Restart nxlog

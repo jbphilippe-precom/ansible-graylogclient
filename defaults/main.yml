@@ -1,0 +1,56 @@
+---
+# defaults file for ansible-graylogclient
+
+## Base ##
+graylogclient_protocol: "udp"
+
+## Redis ##
+graylogclient_redis_rsyslog: no
+graylogclient_redis_gelf: no
+graylogclient_redis_nxlog: no
+graylogclient_redis_std_rsyslog_conf: "graylogclient_redis_std_rsyslog_conf.tpl"
+graylogclient_redis_ms_rsyslog_conf: "graylogclient_redis_ms_rsyslog_conf.tpl"
+graylogclient_redis_cluster_rsyslog_conf: "graylogclient_redis_cluster_rsyslog_conf.tpl"
+graylogclient_redis_std_nxlog_conf: "graylogclient_redis_std_nxlog_conf.tpl"
+graylogclient_redis_ms_nxlog_conf: "graylogclient_redis_ms_nxlog_conf.tpl"
+graylogclient_redis_cluster_nxlog_conf: "graylogclient_redis_cluster_nxlog_conf.tpl"
+graylogclient_redis_conf_name: "redis"
+graylogclient_redis_localname: "local0"
+graylogclient_graylogseverity: "info"
+## variable non prefixees par "graylogclient_" pour faciliter l'utilisation conjointe avec le role ansible-redis
+redis_std: no
+redis_cluster: no
+redis_ms: no
+redis_port: 6379
+redis_sentinel_port: 26379
+redis_master_port: 6379
+redis_slave_port: 6380
+
+# Elasticsearch
+graylogclient_elasticsearch_localname: "local0"
+graylogclient_elasticsearch_old_configuration_path: "/etc/elasticsearch/logging.yml"
+graylogclient_elasticsearch_configuration_path: "/etc/elasticsearch/log4j2.properties"
+graylogclient_elasticsearch_clustername: "elasticsearch"
+graylogclient_elasticsearch_libraries_path: "/usr/share/elasticsearch/lib/"
+graylogclient_elasticsearch_syslog: no
+graylogclient_elasticsearch_gelf: no
+graylogclient_elasticsearch_nxlog: no
+
+# Cassandra
+graylogclient_cassandra_configuration_path: "/etc/cassandra/logback.xml"
+graylogclient_cassandra_libraries_path: "/usr/share/cassandra/lib/"
+
+## Apache ##
+graylogclient_apache_plateforme: ""
+graylogclient_apache_servername: ""
+
+# Nginx
+graylogclient_nginx_conf: "/etc/nginx/nginx.conf"
+graylogclient_nginx_plateforme: ""
+
+# Karaf
+graylogclient_karaf_gelf_path: "/opt/karaf/system/org/ops4j/logging/gelfj"
+graylogclient_karaf_gelf_module_name: "gelfj-0.9.1-SNAPSHOT.jar"
+graylogclient_karaf_gelf_module_version: "0.9.1-SNAPSHOT"
+graylogclient_karaf_log4j_config_file: "/opt/karaf/etc/org.ops4j.pax.logging.cfg"
+graylogclient_karaf_startup_config_file: "/opt/karaf/etc/startup.properties"

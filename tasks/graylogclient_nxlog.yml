@@ -1,0 +1,63 @@
+---
+# tasks file for ansible-graylogclient MongoDB nxlog
+
+- name: "Retrieve and install apt key from aptrepo"
+  apt_key:
+    url="http://aptrepo.services.local/systeme/nxlog/prod/systeme.gpg.pub"
+    state=present
+
+- name: "Add nxlog repository"
+  apt_repository:
+    repo='deb http://aptrepo.services.local/systeme/nxlog/prod {{ ansible_distribution_release }} main'
+    state=present
+
+- name: Install nxlog for Ubuntu Trusty
+  apt: name={{ item_trusty }} update_cache=yes state=latest
+  when: ansible_distribution_release == 'trusty'
+  with_items:
+    - libperl5.18
+    - perl
+    - nxlog-ce
+  loop_control:
+    loop_var: item_trusty
+
+- name: Check if nxlog is installed in Ubuntu Xenial, package bug
+  command: dpkg-query -l nxlog-ce
+  register: is_nxlog_installed
+  when: ansible_distribution_release == 'xenial'
+  changed_when: false
+  failed_when: False
+
+- name: Fake nxlog systemd file for Ubuntu Xenial, package bug
+  copy: dest=/etc/systemd/system/nxlog.service content="" force=no
+  when: ansible_distribution_release == 'xenial' and is_nxlog_installed.rc != 0
+  changed_when: false
+
+- name: Install nxlog for Ubuntu Xenial
+  apt: name={{ item_xenial }} update_cache=yes state=latest
+  when: ansible_distribution_release == 'xenial'
+  with_items:
+    - libapr1
+    - nxlog-ce
+  loop_control:
+    loop_var: item_xenial
+
+- name: Remove nxlog systemd file for Ubuntu Xenial, package bug
+  file: path=/etc/systemd/system/nxlog.service state=absent
+  when: ansible_distribution_release == 'xenial'
+  changed_when: false
+
+- name: Reload systemd in Ubuntu Xenial, package bug
+  command: systemctl daemon-reload
+  when: ansible_distribution_release == 'xenial'
+  changed_when: false
+
+- name: Uploading nxlog main configuration template
+  template:
+    src="graylogclient_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.conf"
+    mode=0644
+  notify: Restart nxlog
+
+- name: Create nxlog directory for multiple configurations
+  file: path=/etc/nxlog/nxlog.d/ state=directory mode=0755

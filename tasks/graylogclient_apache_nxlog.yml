@@ -1,0 +1,22 @@
+---
+# tasks file for ansible-graylogclient apache nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Add nxlog user to adm group
+  user: name=nxlog groups=adm append=yes
+  notify: Restart nxlog
+
+- name: Set recursive rights for /var/log/apache2/ files
+  file: path=/var/log/apache2/ state=directory recurse=yes mode=0660 owner=root group=adm
+
+- name: Fix rights for /var/log/apache2/ directory
+  file: path=/var/log/apache2/ state=directory mode=750 owner=root group=adm
+  notify: Restart nxlog
+
+- name: Uploading apache nxlog configuration template
+  template:
+    src="graylogclient_apache_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.d/apache.conf"
+    mode=0644
+  notify: Restart nxlog

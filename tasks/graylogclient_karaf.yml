@@ -1,0 +1,50 @@
+---
+# tasks file for ansible-graylogclient Karaf GELF Method
+
+- name: Create directory folder for gelf
+  file:
+    path: "{{ graylogclient_karaf_gelf_path }}/{{ graylogclient_karaf_gelf_module_version }}"
+    state: "directory"
+    owner: "karaf"
+    group: "karaf"
+    mode: "0755"
+
+- name: Download Gelf Libraries
+  get_url:
+    url: "http://mirror.services.local/graylog/libraries/{{ graylogclient_karaf_gelf_module_name }}"
+    dest: "{{ graylogclient_karaf_gelf_path }}/{{ graylogclient_karaf_gelf_module_version }}/{{ graylogclient_karaf_gelf_module_name }}"
+    owner: "karaf"
+    group: "karaf"
+    mode: "0644"
+
+- name: Add startup config for gelf
+  lineinfile:
+    dest: "{{ graylogclient_karaf_startup_config_file }}"
+    state: "present"
+    insertafter: "EOF"
+    line: "org/ops4j/logging/gelfj/{{ graylogclient_karaf_gelf_module_version }}/{{ graylogclient_karaf_gelf_module_name }}=7"
+  notify: "Restart Karaf"
+
+- name: Add rootLogguer GRAYLOG
+  lineinfile:
+    dest: "{{ graylogclient_karaf_log4j_config_file }}"
+    state: "present"
+    regexp: "^log4j.rootLogger="
+    line: "log4j.rootLogger=INFO, out, osgi:, GRAYLOG"
+  notify: "Restart Karaf"
+
+- name: Add Gelf Appender config
+  lineinfile:
+    dest: "{{ graylogclient_karaf_log4j_config_file }}"
+    state: "present"
+    insertafter: "EOF"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "^log4j.appender.GRAYLOG=", line: "log4j.appender.GRAYLOG=org.graylog2.log.GelfAppender" }
+    - { regexp: "^log4j.appender.GRAYLOG.graylogHost=", line: "log4j.appender.GRAYLOG.graylogHost={{ graylogclient_graylog_server_addr }}" }
+    - { regexp: "^log4j.appender.GRAYLOG.facility=", line: "log4j.appender.GRAYLOG.facility=karaf" }
+    - { regexp: "^log4j.appender.GRAYLOG.layout=", line: "log4j.appender.GRAYLOG.layout=org.apache.log4j.PatternLayout" }
+    - { regexp: "^log4j.appender.GRAYLOG.extractStacktrace=", line: "log4j.appender.GRAYLOG.extractStacktrace=true" }
+    - { regexp: "^log4j.appender.GRAYLOG.addExtendedInformation=", line: "log4j.appender.GRAYLOG.addExtendedInformation=true" }
+    - { regexp: "^log4j.appender.GRAYLOG.additionalFields=", line: "log4j.appender.GRAYLOG.additionalFields={'application': 'Apache Karaf'}" }

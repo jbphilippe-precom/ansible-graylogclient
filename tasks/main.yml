@@ -1,0 +1,8 @@
+---
+# tasks file for ansible-graylogclient
+
+- include: graylogclient_{{ item }}.yml
+  when: ansible_distribution == 'Ubuntu' and (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'xenial') and graylogclient_middleware_list is defined and graylogclient_graylog_server_addr is defined and graylogclient_graylog_server_port is defined
+  with_items:
+    - "{{ graylogclient_middleware_list }}"
+  tags: [installation]

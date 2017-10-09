@@ -1,0 +1,11 @@
+---
+# tasks file for ansible-graylogclient MongoDB nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Uploading MongoDB nxlog configuration template
+  template:
+    src="graylogclient_mongodb_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.d/mongodb.conf"
+    mode=0644
+  notify: Restart nxlog

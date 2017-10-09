@@ -1,0 +1,13 @@
+---
+
+- name: Syslog
+  include: graylogclient_elasticsearch_syslog.yml
+  when: graylogclient_elasticsearch_syslog
+
+- name: Gelf
+  include: graylogclient_elasticsearch_gelf.yml
+  when: graylogclient_elasticsearch_gelf
+
+- name: Nxlog
+  include: graylogclient_elasticsearch_nxlog.yml
+  when: graylogclient_elasticsearch_nxlog

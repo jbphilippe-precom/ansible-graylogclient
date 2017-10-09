@@ -1,0 +1,26 @@
+---
+# tasks file for ansible-graylogclient Redis SYSLOG
+
+- name: Uploading Rsyslog Standalone template
+  template:
+    src="{{ graylogclient_redis_std_rsyslog_conf }}"
+    dest="/etc/rsyslog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_std
+  notify: Restart Rsyslog
+
+- name: Uploading Rsyslog Master Slave template
+  template:
+    src="{{ graylogclient_redis_ms_rsyslog_conf }}"
+    dest="/etc/rsyslog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_ms
+  notify: Restart Rsyslog
+
+- name: Uploading Rsyslog Cluster template
+  template:
+    src="{{ graylogclient_redis_cluster_rsyslog_conf }}"
+    dest="/etc/rsyslog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_cluster
+  notify: Restart Rsyslog

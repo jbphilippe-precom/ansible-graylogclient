@@ -1,0 +1,60 @@
+---
+# tasks file for ansible-graylogclient ElasticSearch GELF Method
+
+- name: Download Gelf Libraries
+  get_url:
+    url: http://mirror.services.local/graylog/libraries/{{ item_gelf_lib }}
+    dest: "{{ graylogclient_elasticsearch_libraries_path }}"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  with_items:
+    - logstash-gelf-1.11.1.jar
+    - json-simple-1.1.1.jar
+  loop_control:
+    loop_var: item_gelf_lib
+
+  ## Prior to 5.X .Add 'gelf' in RootLogger in logging.yml ##
+- name: Gelf RootLogger (prior to 5.X)
+  lineinfile:
+    dest: "{{ graylogclient_elasticsearch_old_configuration_path }}"
+    regexp: '^(rootLogger:(?!.*\bgelf\b).*)$'
+    line: '\1, gelf'
+    backrefs: yes
+  when: es_version|version_compare("5.0.0",'<')
+  notify: Restart Elasticsearch
+
+  ## Prior to 5.X .Add gelfblock in Appender, with  "content: |2"  to have the block correctly indented ##
+- name: Gelf Block in Appender (prior to 5.X)
+  blockinfile:
+    dest: "{{ graylogclient_elasticsearch_old_configuration_path }}"
+    marker: "  ### {mark} ANSIBLE MANAGED BLOCK ###  "
+    insertafter: "appender:"
+    content: |2
+        gelf:
+          type: biz.paluch.logging.gelf.log4j.GelfLogAppender
+          Host: "{{ graylogclient_graylog_server_addr }}"
+          Port: "{{ graylogclient_graylog_server_port }}"
+          originHost: "{{ ansible_fqdn }}"
+          extractStacktrace: true
+          addExtendedInformation: true
+          # additionalFields: "{'application': 'ElasticSearch', 'env': 'LAB'}"
+  when: es_version|version_compare("5.0.0",'<')
+  notify: Restart Elasticsearch
+
+  ## 5.X only
+- name: Gelf block in Appender (5.X)
+  blockinfile:
+    dest: "{{ graylogclient_elasticsearch_configuration_path }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK ###"
+    block: |
+      #gelf
+      rootLogger.appenderRef.gelf.ref = gelf
+      appender.gelf.name = gelf
+      appender.gelf.type = gelf
+      appender.gelf.Host = {{ graylogclient_protocol }}:{{ graylogclient_graylog_server_addr }}
+      appender.gelf.Port = {{ graylogclient_graylog_server_port }}
+      appender.gelf.originHost = {{ ansible_fqdn }}
+      appender.gelf.extractStacktrace = true
+  when: es_version|version_compare("5.0.0",'>=')
+  notify: Restart Elasticsearch

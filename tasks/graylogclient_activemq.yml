@@ -1,0 +1,15 @@
+---
+# tasks file for ansible-graylogclient activemq nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Add nxlog user to adm group
+  user: name=nxlog groups=activemq append=yes
+  notify: Restart nxlog
+
+- name: Uploading nginx nxlog configuration template
+  template:
+    src="graylogclient_activemq_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.d/activemq.conf"
+    mode=0644
+  notify: Restart nxlog

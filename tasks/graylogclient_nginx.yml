@@ -1,0 +1,37 @@
+---
+# tasks file for ansible-graylogclient nginx nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Add nxlog user to adm group
+  user: name=nxlog groups=adm append=yes
+  notify: Restart nxlog
+
+- name: Fix rights for /var/log/nginx directory
+  file: path=/var/log/nginx state=directory mode=0755 owner=www-data group=adm
+  notify: Restart nxlog
+
+- name: Set recursive rights for /var/log/nginx/ files
+  file: path=/var/log/nginx/* state=directory recurse=yes mode=0660 owner=www-data group=adm
+  notify: Restart nxlog
+
+- name: Uploading nginx log format configuration
+  template:
+    src: "graylogclient_nginx_conf.tpl"
+    dest: "/etc/nginx/conf.d/graylog_log_format.conf"
+    mode: "0644"
+  notify: Restart Nginx
+
+- name: Add rootLogguer GRAYLOG
+  lineinfile:
+    dest: "{{ graylogclient_nginx_conf }}"
+    state: "absent"
+    regexp: ".*access_log"
+  notify: "Restart Nginx"
+
+- name: Uploading nginx nxlog configuration template
+  template:
+    src: "graylogclient_nginx_nxlog_conf.tpl"
+    dest: "/etc/nxlog/nxlog.d/nginx.conf"
+    mode: "0644"
+  notify: Restart nxlog

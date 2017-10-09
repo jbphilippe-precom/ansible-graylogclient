@@ -1,0 +1,26 @@
+---
+- include: graylogclient_nxlog.yml
+
+- name: Uploading Redis Standalone nxlog configuration template
+  template:
+    src="{{ graylogclient_redis_std_nxlog_conf }}"
+    dest="/etc/nxlog/nxlog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_std
+  notify: Restart nxlog
+
+- name: Uploading Redis Master Slave nxlog configuration template
+  template:
+    src="{{ graylogclient_redis_ms_nxlog_conf }}"
+    dest="/etc/nxlog/nxlog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_ms
+  notify: Restart nxlog
+
+- name: Uploading Redis Cluster nxlog configuration template
+  template:
+    src="{{ graylogclient_redis_cluster_nxlog_conf }}"
+    dest="/etc/nxlog/nxlog.d/{{ graylogclient_redis_conf_name }}.conf"
+    mode=0644
+  when: redis_cluster
+  notify: Restart nxlog

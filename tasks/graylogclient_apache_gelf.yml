@@ -1,0 +1,37 @@
+---
+
+- name: Download Gelf Module
+  get_url:
+    url: http://mirror.services.local/graylog/libraries/{{ item }}
+    dest: "/tmp"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  with_items:
+    - gelfj-1.0.1.jar
+
+- name: Disable event module
+  apache2_module: state=absent name=mpm_event
+
+- name: Enable prefork module
+  apache2_module: state=present name=mpm_prefork
+
+- name: Install utils
+  apt: name={{ item }} update_cache=yes state=latest
+  with_items:
+    - libjson-c2libjson-c2
+    - zlib1g
+
+- name: Install gelf module for apache
+  apt: deb=/tmp/gelfj-1.0.1.jar.deb
+  register: graylogclient_apache_gelf_module
+
+- name: Update the module configuration file
+  template:
+    src="graylogclient_apache_gelf_conf.tpl"
+    dest="/etc/apache2/mods-enabled/log_gelf.conf"
+    mode=0644
+
+- name: Enable apache gelf module
+  apache2_module: state=present name=log_gelf
+  notify: Restart Apache

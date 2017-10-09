@@ -1,0 +1,48 @@
+---
+# tasks file for ansible-graylogclient Cassandra GELF Method
+
+  ## Add 'gelf' in RootLogger in logback.yml ##
+- name: Gelf RootLogger
+  lineinfile:
+    dest: "{{ graylogclient_cassandra_configuration_path }}"
+    insertafter: '<appender-ref ref="FILE" />'
+    line: '    <appender-ref ref="gelf" />'
+    state: "present"
+  notify: Restart Cassandra
+
+- name: Download Gelf Libraries
+  get_url:
+    url: http://mirror.services.local/graylog/libraries/{{ item }}
+    dest: "{{ graylogclient_cassandra_libraries_path }}"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  with_items:
+    - logstash-gelf-1.9.0.jar
+
+- name: Gelf Block in Appender
+  blockinfile:
+    dest: "{{ graylogclient_cassandra_configuration_path }}"
+    marker: "  ### {mark} ANSIBLE MANAGED BLOCK ###  "
+    insertbefore: '<root level="INFO">'
+    block: |+2
+        <appender name="gelf" class="biz.paluch.logging.gelf.logback.GelfLogbackAppender">
+          <host>{{ graylogclient_protocol }}:{{ graylogclient_graylog_server_addr }}</host>
+          <port>{{ graylogclient_gelf_port }}</port>
+          <version>1.0</version>
+          <facility>java-test</facility>
+          <extractStackTrace>true</extractStackTrace>
+          <filterStackTrace>true</filterStackTrace>
+          <mdcProfiling>true</mdcProfiling>
+          <timestampPattern>yyyy-MM-dd HH:mm:ss,SSSS</timestampPattern>
+          <maximumMessageSize>8192</maximumMessageSize>
+          <additionalFields>fieldName1=fieldValue1,fieldName2=fieldValue2</additionalFields>
+          <additionalFieldTypes>fieldName1=String,fieldName2=Double,fieldName3=Long</additionalFieldTypes>
+          <mdcFields>mdcField1,mdcField2</mdcFields>
+          <dynamicMdcFields>myMdc.*,[a-z]+Field</dynamicMdcFields>
+          <includeFullMdc>true</includeFullMdc>
+          <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+              <level>INFO</level>
+          </filter>
+        </appender>
+  notify: Restart Cassandra

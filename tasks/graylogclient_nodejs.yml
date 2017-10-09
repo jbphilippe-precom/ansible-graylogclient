@@ -1,0 +1,11 @@
+---
+# tasks file for ansible-graylogclient Node.js nxlog
+
+- include: graylogclient_nxlog.yml
+
+- name: Uploading Node.js nxlog configuration template
+  template:
+    src="graylogclient_nodejs_nxlog_conf.tpl"
+    dest="/etc/nxlog/nxlog.d/nodejs.conf"
+    mode=0644
+  notify: Restart nxlog

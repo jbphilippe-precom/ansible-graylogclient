@@ -1,0 +1,38 @@
+---
+# tasks file for ansible-graylogclient for Redis
+
+- name: Add read on Standalone logfile for other (like syslog)
+  file:
+    path="/var/log/redis/redis-server-{{ redis_port }}.log"
+    mode=0664
+  when: redis_std or redis_ms
+
+- name: Add read on Sentinel logfile for other (like syslog)
+  file:
+    path="/var/log/redis/redis-sentinel-{{ redis_sentinel_port }}.log"
+    mode=0664
+  when: redis_ms
+
+- name: Add read on Redis Master logfile for other (like syslog)
+  file:
+    path="/var/log/redis/redis-server-{{ redis_master_port }}.log"
+    mode=0664
+  when: redis_cluster
+
+- name: Add read on Redis Slave logfile for other (like syslog)
+  file:
+    path="/var/log/redis/redis-server-{{ redis_slave_port }}.log"
+    mode=0664
+  when: redis_cluster
+
+- name: Rsyslog
+  include: graylogclient_redis_rsyslog.yml
+  when: graylogclient_redis_rsyslog
+
+- name: GELF
+  debug: msg="GELF NOT AVAILABLE YET. USE SYSLOG"
+  when: graylogclient_redis_gelf
+
+- name: Rsyslog
+  include: graylogclient_redis_nxlog.yml
+  when: graylogclient_redis_nxlog
