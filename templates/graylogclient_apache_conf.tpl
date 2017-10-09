@@ -69,7 +69,7 @@
 #ServerRoot "/etc/apache2"
 
 #
-# The accept serialization lock file MUST BE STORED ON A LOCAL DISK.
+# The accept serialization lock file MUST BE STORED ON A LOCAL DK.
 #
 Mutex file:${APACHE_LOCK_DIR} default
 

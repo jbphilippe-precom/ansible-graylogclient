@@ -24,7 +24,7 @@
           facility: "{{ graylogclient_elasticsearch_localname }}"
           layout:
             type: pattern
-            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %.10000m%n"
+            conversionPattern: "[%d{O8601}][%-5p][%-25c] %.10000m%n"
   when: es_version|version_compare("5.0.0",'<')
   notify: Restart Elasticsearch
 
@@ -43,6 +43,6 @@
       appender.syslog.port = {{ graylogclient_graylog_server_port }}
       appender.syslog.facility = {{ graylogclient_elasticsearch_localname }}
       appender.syslog.layout.type = PatternLayout
-      appender.syslog.layout.pattern = "[%d{ISO8601}][%-5p][%-25c] %.10000m%n"
+      appender.syslog.layout.pattern = "[%d{O8601}][%-5p][%-25c] %.10000m%n"
   when: es_version|version_compare("5.0.0",'>=')
   notify: Restart Elasticsearch
